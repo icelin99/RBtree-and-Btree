@@ -24,7 +24,7 @@ public:
         return _t.End();
     }
     ValueType& operator[](const K& key){
-        return *(_t.Find(key));
+        return *(_t.find(key));
     }
     bool empty()const{
         return _t.Empty();
@@ -39,7 +39,7 @@ public:
         _t.Clear();
     }
     iterator find(const K& key){
-        return _t.Find(key);
+        return _t.find(key);
     }
     bool check(){
         return _t.checkRBTree();

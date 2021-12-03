@@ -132,7 +132,7 @@ public:
             auto *new_node = new Node();
 
             if (pRoot->keyNum == KEY_MAX) { // root can't be bigger
-                new_node->keyNum = 0;
+                new_node->keyNum = 0;// --------------0->1
                 new_node->isLeaf = false;
                 new_node->child[0] = pRoot;
                 splitChild(new_node, 0);
@@ -145,7 +145,8 @@ public:
         return std::pair<iterator,bool>(iterator(pNewN), true);
     }
 
-    void Delete(const K& ele){
+    void Delete(const K& el){
+        const K ele = el;
         if(pRoot == nullptr)
             return ;
         // can't find,
@@ -194,9 +195,10 @@ public:
         }
     }
 
-    iterator search(Node*x, const K& ele) {
+    iterator search(Node*x, const K& el) {
+        const K ele = el;
         if(x == nullptr) {
-            return iterator(End());
+            return iterator(nullptr);//---
         }
         int k = 0;
         while( k < x->keyNum && ele > keyOfValue()(x->keys[k])) // find until ele = key[k] or the first bigger, or the end
@@ -205,8 +207,7 @@ public:
             return iterator(x);
         }
         else if(x->isLeaf){
-            std::cout<<"search NONE!"<<std::endl;
-            return iterator(End());
+            return iterator(nullptr);//---
         }
         else {
             return search(x->child[k], ele);
@@ -346,7 +347,9 @@ private:
         }
     }
 
-    void Delete_fixup(Node* x, const K& ele){
+    void Delete_fixup(Node* x, const K& el){ //const K& el ???
+        // ele被修改
+        const K  ele = el;
         int i = x->keyNum;
         if (x->isLeaf){ // delete one is leaf
             while (i>0 && (ele < keyOfValue()(x->keys[i-1])))
@@ -360,6 +363,7 @@ private:
                         x->keys[j - 1] = x->keys[j];
                     }
                 }
+                x->keys[x->keyNum-1] = V();
                 x->keyNum--;
             }
         }
@@ -367,7 +371,7 @@ private:
             while (i>0 && (ele < keyOfValue()(x->keys[i-1]))) {
                 i--;
             }
-            if (i>0 && ele == keyOfValue()(x->keys[i-1])) { // find it
+            if (i>0 && (ele == keyOfValue()(x->keys[i-1]))) { // find it
                 Node* child1 = x->child[i-1];
                 Node* child2 = x->child[i];
                 // 左Child 多，从左Child移一个
@@ -390,36 +394,23 @@ private:
             }
             else { // ele 在 child[i]里
                 Node* subTree = x->child[i];
-                Node* right = new Node ();
+                Node* right = nullptr; //------------
                 if(i < x->keyNum) {
                     right = x->child[i+1];
                 }
-                Node * left = new Node();
+                Node * left = nullptr;
                 if(i > 0) {
                     left = x->child[i-1];
                 }
 
                 if(subTree->keyNum == KEY_MIN){ // need merge or substitute, then delete
                     if (left && left->keyNum > KEY_MIN) { // Replace with ele in the left brothers
-                        getFromLeftBrother(x, i-1, subTree, left);
-                        //getFromLeftBrother(x, i-1, subTree, left);
+                        getFromLeftBrother(x, i-1, subTree, left); //  ????? ele被改变了？这个bug找了好久，终于找出来了
+                       // 为什么ele会被改变
                     }
                     else if(right && right->keyNum > KEY_MIN) { // Replace with ele in the right brothers
                         getFromRightBrother(x, i, subTree, right);
-                        //getFromRightBrother(x, i-1, subTree, right);
                     }
-//                    else if((left && left->keyNum == KEY_MIN) && (right && right->keyNum == KEY_MIN)){ // both children are small,borrow
-//                        Node* pleft = ((i>0) ? x->child[i-1] : nullptr);
-//                        Node* pright = ((i <= x->keyNum) ? x->child[i] : nullptr);
-//                        if (pleft && pleft->keyNum > KEY_MIN) { // Replace with ele in the left brothers
-//                            getFromLeftBrother(x, i-1, pright, pleft);
-//                            //getFromLeftBrother(x, i-1, subTree, left);
-//                        }
-//                        else if(pright && pright->keyNum > KEY_MIN) { // Replace with ele in the right brothers
-//                            getFromRightBrother(x, i-1, pleft, pright);
-//                            //getFromRightBrother(x, i-1, subTree, right);
-//                        }
-//                    }
                     else if (left && left->keyNum == KEY_MIN){ // left brother also very small, then merge them
                         mergeChild(x, i-1);  //---------------------------------
                         subTree = left;
@@ -462,17 +453,24 @@ private:
         {
             x->child[i+1] = x->child[i];
         }
-        for (int i=x->keyNum; i>=childIndex; i--)
+//        for (int j=x->keyNum; j>=childIndex; j--)
+//        {
+//            x->keys[j] = x->keys[j-1];
+//        }
+        for (int j=x->keyNum; j>childIndex; j--)
         {
-            x->keys[i] = x->keys[i-1];
+            x->keys[j] = x->keys[j-1];
         }
         x->keys[childIndex] = child1->keys[M-1];
-        x->keyNum++;
+
         x->child[childIndex+1] = child2;
+        x->keyNum++;
 
         // clear child others
         for(int i = child1->keyNum; i < KEY_MAX; i++)
             child1->keys[i] = V();
+        for(int i = child1->keyNum+1; i <= KEY_MAX; i++)
+            child1->child[i] = nullptr;
 
         return true;
     }
@@ -482,7 +480,7 @@ private:
         Node *child2 = x->child[index + 1];
         //将child2数据 合并到child1, 最终结果为child1
         child1->keyNum = KEY_MAX;
-        // 将z中节点拷贝到y的后半部分
+        //
         for (int i = t; i < KEY_MAX; i++) {
             child1->keys[i] = child2->keys[i - t];
         }
@@ -500,6 +498,7 @@ private:
         }
 
         //删除child2
+
         x->keyNum--;
         deleteNode(child2);
     }
@@ -603,10 +602,10 @@ private:
 
     void Destroy(Node *x) {
         if (x) {
-            if(x == pRoot){
-                pRoot = nullptr;
-                return;
-            }
+//            if(x == pRoot){
+//                pRoot = nullptr;
+//                return;
+//            }------------1
             for(int i=0 ; i<=x->keyNum ; i++){
                 if (x->isLeaf)
                     break;

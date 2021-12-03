@@ -234,22 +234,7 @@ public:
         return isValidRBTree(pRoot, BlackCount, pathCount);//property 3,4
     }
 
-    iterator Find(const K& key) {
-        Node* x = pRoot;
-        while (x){
-            if (key == keyOfValue()(x->value)){
-                return iterator(x);
-            }
-            else if (key < keyOfValue()(x->value)){
-                x = x->pLeftChild;
-            }
-            else{
-                x = x->pRightChild;
-            }
-        }
-        std::cout<< "Don't find "<<key<< std::endl;
-        return iterator(End());//don't find . return root
-    }
+
 
     bool Empty() const{
         if(pRoot->pLeftChild == nullptr && pRoot->pRightChild == nullptr)
@@ -262,7 +247,8 @@ public:
 
     }
 
-    void Delete(const K& ele) {
+    void Delete(const K& el) {
+        const K ele = el;
         iterator iy;
         iy = Find(ele); // Find first use
         Node *x = iy.getNode();
@@ -351,6 +337,23 @@ public:
 
         std::cout<<"\nupdate: "<<key<<std::endl;
         print_by_order();
+    }
+
+    iterator find(const K& key){ // print messaage
+        Node* x = pRoot;
+        while (x){
+            if (key == keyOfValue()(x->value)){
+                return iterator(x);
+            }
+            else if (key < keyOfValue()(x->value)){
+                x = x->pLeftChild;
+            }
+            else{
+                x = x->pRightChild;
+            }
+        }
+        std::cout<< "Don't find "<<key<< std::endl;
+        return iterator(End());//don't find . return root
     }
 
 
@@ -609,6 +612,22 @@ private:
             }
         }
         y->color = BLACK;
+    }
+
+    iterator Find(const K& key){ // print messaage
+        Node* x = pRoot;
+        while (x){
+            if (key == keyOfValue()(x->value)){
+                return iterator(x);
+            }
+            else if (key < keyOfValue()(x->value)){
+                x = x->pLeftChild;
+            }
+            else{
+                x = x->pRightChild;
+            }
+        }
+        return iterator(End());//don't find . return root
     }
 
     void isOrdered( Node* x) {
