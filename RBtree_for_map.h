@@ -60,7 +60,7 @@ public:
         _t.Clear();
     }
     iterator find(const K& key) {
-        return _t.Find(key);
+        return _t.find(key);
     }
     bool check(){
         return _t.checkRBTree();
@@ -75,11 +75,11 @@ public:
         return _t.Update(key,val);
     }
     DataType search(const K& key){
-        iterator iy = _t.Find(key);
+        iterator iy = _t.find(key);
         Node* x = iy.getNode();
         if(x == nullptr)
             return DataType();
-        return x->value;
+        return x->value; // 仅仅使用[key]就能输出data
     }
 
 
